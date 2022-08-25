@@ -1,0 +1,46 @@
+
+{% extends "base_generic.html" %}
+{% load static %}
+{% block content %}
+  <div class="container form-signin mt-0 pt-0">
+    <div class="mb-3 mt-3 text-center">
+      <a href={% url 'home' %}>
+        <img class = "rounded" src="{% static 'myuser/images/myauth_logo.svg' %}" alt="" width="100px" height="30px">
+      </a>
+    </div>
+    <div class="container form-signin border rounded-3">
+      <form action={% url 'login' %} method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="container">
+          <div class="mb-3">
+            <h1 class="h3 mb-3 mt-3 font-weight-normal">Log-In</h1>
+          </div>
+          <div class="mb-3">
+            <label for="login_id" class="form-label">Email</label>
+            <a href={% url 'check_login' %} class="link-primary small float-end">Change?</a>
+            <input name="login_id" type="text" class="form-control" id="login_id" value="{{form.login_id.value}}" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label float-start">Password</label>
+            <a href={% url 'forgot_password' %} class="link-primary small float-end">Forgot Password?</a>
+            <input name="password" type="password" class="form-control" id="password">
+          </div>
+          <!--
+          <div class="mb-3 text-end small">
+            <a href={% url 'forgot_password' %} class="link-primary">Forgot Password?</a>
+          </div>
+          -->
+          <div class="mb-3">
+            <button type="submit" class="w-100 btn btn-lg btn-warning">Log-In</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="separator mb-4 mt-4">
+      <span>Don't have an account?</span>
+    </div>
+    <div class="mb-4">
+      <a href={% url 'signup' %} class="form-control btn btn-secondary">Create your MyAuth account</a>
+    </div>
+  </div>
+{% endblock content %}

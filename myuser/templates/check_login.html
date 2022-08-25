@@ -1,0 +1,39 @@
+{% extends "base_generic.html" %}
+{% load template_filters %}
+{% load static %}
+{% block content %}
+  <div class="container form-signin mt-0 pt-0">
+    <div class="mb-3 mt-3 text-center">
+      <a href={% url 'home' %}>
+        <img class = "rounded" src="{% static 'myuser/images/myauth_logo.svg' %}" alt="" width="100px" height="30px">
+      </a>
+    </div>
+    <div class="container form-signin border rounded-3">
+      <form action={% url 'check_login' %} method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          <h1 class="h3 mb-3 mt-3 font-weight-normal">Log in</h1>
+        </div>
+        <div class="mb-3">
+          <label for="login_id" class="form-label">Email</label>
+          <input name="login_id" type="text" class="form-control {{ form.login_id.errors|add_class:"is-invalid" }}" id="login_id" required>
+          <div class="valid-feedback"></div>
+          <div class="invalid-feedback">
+            {% get_error_msg " | " form.login_id.errors "Enter valid email!" %}
+          </div>
+        </div>
+        <div class="mb-3">
+          <button type="submit" class="w-100 btn btn-lg btn-warning">Continue</button>
+        </div>
+      </form>
+      <!--
+      <div class="separator mb-4 mt-4"></div>
+      <div class="mb-4">
+        <span>Already have an account?</span>
+        <a href="{% url 'check_login' %}">Log in</a>
+      </div>
+      -->
+    </div>
+  </div>
+{% endblock content %}
+

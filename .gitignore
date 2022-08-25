@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.env
+venv/
+
+
+# SQLite database files
+
+*.sqlite3
+
+# Text backup files
+*.bak
+
+#swp files
+*.swp
+
+#tags
+tags
+
+/secrets.json
+/secrets_prod.json
