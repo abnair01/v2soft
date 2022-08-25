@@ -7,27 +7,52 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
 {% endblock stylesheet %}
 {% block content %}
+
+<div class="row bg-warning">
+  <div class="mt-2 text-center">
+    <h3>Your Todo List</h3>
+  </div>
+</div>
+
 <div class="container">
-  <div class="">
-    <div class="btn-group" role="group" aria-label="Basic example">
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-        <i class="bi bi-plus-square"></i>
-      </button>
-      <button type="button" class="btn btn-primary"> 
-        <i class="bi bi-pencil-square"></i>
-      </button>
-      <button type="button" class="btn btn-primary">
-        <i class="bi bi-dash-square"></i>
-      </button>
+  <div class="row bg-dark fixed-bottom">
+    <div class="text-center">
+      <div class="" role="toolbar" aria-label="Toolbar with button groups">
+        <div class="btn-group m-2" role="group" aria-label="First Action Group">
+          <button type="button" class="btn btn-success" title="Create Todo List" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            <i class="bi bi-plus-square"></i>
+          </button>
+          <button type="button" class="btn btn-warning" title="Edit Todo List"> 
+            <i class="bi bi-pencil-square"></i>
+          </button>
+          <button type="button" class="btn btn-danger" title="Delete Todo List">
+            <i class="bi bi-dash-square"></i>
+          </button>
+        </div>
+        <div class="btn-group m-2" role="group" aria-label="Second Action Group">
+          <a href={% url 'todo:todo' %} target="_self">
+            <button type="button" class="btn btn-primary" title="Todo Dashboard"> 
+              <i class="bi bi-arrow-up-square"></i>
+            </button>
+          </a>
+          <button type="button" class="btn btn-info" title="User Account">
+            <i class="bi bi-person-bounding-box"></i>
+          </button>
+        </div>
+        <div class="btn-group m-2" role="group" aria-label="Third Action group">
+          <button type="button" class="btn btn-secondary" title="Logout">
+            <i class="bi bi-box-arrow-right"></i>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="">
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+  <div class="mb-4 row justify-content-center">
+    <div class="row row-cols-sm-1 row-cols-md-2 row-cols-lg-3 g-4">
       {% for todo in todo_qs %}
         <div class="col-sm-6">
-          <div class="card" style="width: 18rem;">
-            <div class="card-header">
+          <div class="card">
+            <div class="card-header text-center">
               {{todo.title}}
             </div>
             <div class="card-body">
@@ -41,15 +66,15 @@
                 {% endfor %}
               </ul>
             </div>
-            <div class="card-footer text-muted">
+            <div class="card-footer text-muted text-center">
               <div class="btn-group" role="group" aria-label="Basic example">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#itemModal" data-bs-todoid="{{todo.id}}">
+                <button type="button" class="btn btn-success" title="Add Todo Item" data-bs-toggle="modal" data-bs-target="#itemModal" data-bs-todoid="{{todo.id}}">
                   <i class="bi bi-plus-square"></i>
                 </button>
-                <button type="button" class="btn btn-primary">
+                <button type="button" class="btn btn-warning" title="Edit Todo Item">
                   <i class="bi bi-pencil-square"></i>
                 </button>
-                <button type="button" class="btn btn-primary">
+                <button type="button" class="btn btn-danger" title="Delete Todo Item">
                   <i class="bi bi-dash-square"></i>
                 </button>
               </div>
@@ -58,6 +83,8 @@
         </div>
       {% endfor %}
     </div>
+  </div>
+  <div class="mb-5 row">
   </div>
 </div>
   <!-- Modal -->
