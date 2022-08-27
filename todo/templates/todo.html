@@ -51,7 +51,8 @@
     <div class="row row-cols-sm-1 row-cols-md-2 row-cols-lg-3 g-4">
       {% for todo in todo_qs %}
         <div class="col-sm-6">
-          <div class="card">
+          {% concat "card-" todo.id as card_id %}
+          <div class="card" id="{{card_id}}" data-todoid="{{todo.id}}">
             <div class="card-header text-center">
               {{todo.title}}
             </div>
@@ -59,22 +60,24 @@
               <ul class="list-group list-group-flush">
                 {% for item in todo.todoitem_set|get_related_query_set %}
                   <li class="list-group-item hstack gap-3 form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" {{item.done|add_boolean_attr:"checked"}}>
-                      <label class="form-check-label">{{ item.title }}</label>
-                      <label class="form-check-label ms-auto">{{ item.due_date }}</label>
+                    {% concat todo.id item.id as item_id %}
+                    {% add_boolean_attr item.done "checked" as cb_attr %}
+                    <input class="form-check-input" type="checkbox" value="" id="{{ item_id }}" {{cb_attr}} data-todo-itemid="{{item.id}}">
+                    <label class="form-check-label">{{ item.title }}</label>
+                    <label class="form-check-label ms-auto">{{ item.due_date }}</label>
                   </li>
                 {% endfor %}
               </ul>
             </div>
             <div class="card-footer text-muted text-center">
               <div class="btn-group" role="group" aria-label="Basic example">
-                <button type="button" class="btn btn-success" title="Add Todo Item" data-bs-toggle="modal" data-bs-target="#itemModal" data-bs-todoid="{{todo.id}}">
+                <button type="button" class="btn btn-success" title="Add Todo Item" data-button-box="item-add" data-bs-toggle="modal" data-bs-target="#itemModal" data-bs-todoid="{{todo.id}}">
                   <i class="bi bi-plus-square"></i>
                 </button>
-                <button type="button" class="btn btn-warning" title="Edit Todo Item">
+                <button type="button" class="btn btn-warning" title="Edit Todo Item" data-button-box="item-edit">
                   <i class="bi bi-pencil-square"></i>
                 </button>
-                <button type="button" class="btn btn-danger" title="Delete Todo Item">
+                <button type="button" class="btn btn-danger" title="Delete Todo Item" data-button-box="item-delete" data-todoid="{{todo.id}}">
                   <i class="bi bi-dash-square"></i>
                 </button>
               </div>
@@ -141,7 +144,7 @@
             -->
 
             <div class="mb-3">
-              <label for="todo_list_id" class="form-label">Title</label>
+              <label for="todo_list_id" class="form-label">Todo Id</label>
               <input name="todo_list_id" type="text" class="form-control" id="todo_list_id" required>
             </div>
             <div class="mb-3">
@@ -150,7 +153,7 @@
             </div>
             <div class="mb-3">
               <label for="item_due_date" class="form-label">Due Date</label>
-              <input name="item_due_date" type="text" class="form-control" id="item_due_date" required readonly placeholder='Select Due Date'>
+              <input name="item_due_date" type="text" class="form-control" id="item_due_date" required placeholder='Select Due Date'>
             </div>
             <div class="mb-3">
               <button type="submit" class="w-100 btn btn-lg btn-warning">Create</button>
@@ -218,6 +221,8 @@
       itemModal.addEventListener('show.bs.modal', event => {
         // Button that triggered the modal
         const button = event.relatedTarget
+        console.log(event.target);
+        console.log(event.relatedTarget);
         // Extract info from data-bs-* attributes
         const todoListId = button.getAttribute('data-bs-todoid')
         // If necessary, you could initiate an AJAX request here
@@ -230,5 +235,58 @@
         //modalTitle.textContent = `New message to ${recipient}`
         todoListIdInput.value = todoListId
       })
+
+
+      //Register click event for all item delete button click.
+
+      const itemDeleteButtons = document.querySelectorAll('[data-button-box="item-delete"]');
+      console.log(itemDeleteButtons.length);
+
+      itemDeleteButtons.forEach(item => {
+        item.addEventListener('click',processItemDelete);
+      });
+
+
+      function processItemDelete(event){
+        //event.preventDefault();
+        elem=event.currentTarget;
+        cardid="card-"+elem.dataset.todoid;
+        const card=document.getElementById(cardid);
+        const checkedItems = card.querySelectorAll('input:checked')
+        var items=[];
+        var itemId="itemid";
+        if(checkedItems.length > 0){
+          for(let i = 0; i< checkedItems.length; i++){
+            //if data attribute name in element is data-todo-itemid, then
+            //to access it in javascript us element.dataset.todoItemid
+            items.push({[itemId] : checkedItems[i].dataset.todoItemid});
+          }
+          var postData={};
+          postData.items = items;
+          let jsonedPostData = JSON.stringify(postData);
+          let httpRequest = new XMLHttpRequest();
+          httpRequest.onreadystatechange = processResponse;
+          httpRequest.onload = loadPage;
+          httpRequest.open('POST','{% url 'todo:delete_todo_item' %}');
+          httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+          httpRequest.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+          httpRequest.send(jsonedPostData);
+
+          function processResponse(){
+            if(httpRequest.readyState === XMLHttpRequest.DONE){
+              if(httpRequest.status === 200){
+                //console.log(httpRequest.responseText);
+              }else{
+                //console.log("Some Error");
+                //console.log(httpRequest.responseText);
+              }
+            }
+          }
+          function loadPage(){
+            document.location.reload();
+          }
+        }
+      }
+
   </script>
 {% endblock script %}

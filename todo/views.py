@@ -4,10 +4,11 @@ from django.http import HttpResponse
 from django.views import View
 from todo.forms import TodoForm
 from todo.forms import TodoItemForm
+#from todo.forms import DeleteTodoItemForm
 from todo.models import TodoList
 from todo.models import TodoItem
-# Create your views here.
 from django.contrib.auth import get_user_model
+import json
 
 from django.utils.dateparse import parse_date
 class TodoView(View):
@@ -57,3 +58,22 @@ class TodoItemView(View):
             new_todo.save()
         return redirect("todo:todo")
 
+class DeleteTodoItemView(View):
+    def post(self, request):
+        json_data=json.loads(request.body)
+        #import pdb; pdb.set_trace()
+        #response_data={'status':'failed'}
+        #form = DeleteTodoItemForm(json_data)
+        item_ids = []
+        for obj in json_data['items']:
+            item_ids.append(obj['itemid'])
+        #This will do bulk delete
+        if(len(item_ids) > 0):
+            todo_item_qs = TodoItem.objects.filter(id__in=item_ids)
+            todo_item_qs.delete()
+            return HttpResponse("Todo Items deleted")
+        else:
+            return HttpResponse("Empty data")
+
+    def get(self, request):
+        return HttpResponse("GET Delete Todo Item View")
