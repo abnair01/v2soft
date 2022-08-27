@@ -4,13 +4,17 @@ from django.http import HttpResponse
 from django.views import View
 from todo.forms import TodoForm
 from todo.forms import TodoItemForm
+from todo.forms import UpdateTodoItemForm
 #from todo.forms import DeleteTodoItemForm
 from todo.models import TodoList
 from todo.models import TodoItem
 from django.contrib.auth import get_user_model
 import json
-
+from django.utils.decorators import method_decorator
 from django.utils.dateparse import parse_date
+from django.contrib.auth.decorators import login_required
+
+@method_decorator(login_required(login_url='myauth:check_login'),name='dispatch')
 class TodoView(View):
     form_class =  TodoForm
     template_name = 'todo.html'
@@ -40,6 +44,7 @@ class TodoView(View):
 
 
 
+@method_decorator(login_required(login_url='myauth:check_login'),name='dispatch')
 class TodoItemView(View):
     form_class =  TodoItemForm
     template_name = 'todo.html'
@@ -58,6 +63,26 @@ class TodoItemView(View):
             new_todo.save()
         return redirect("todo:todo")
 
+
+@method_decorator(login_required(login_url='myauth:check_login'),name='dispatch')
+class UpdateTodoItemView(View):
+    form_class =  UpdateTodoItemForm
+    template_name = 'todo.html'
+    def post(self, request):
+        context = {}
+        form = self.form_class(request.POST)
+        #import pdb; pdb.set_trace()
+        if form.is_valid():
+            #user = get_user_model().objects.get(pk=request.user.id)
+            #c_title = request.POST['title']
+            #c_due_date = parse_date(request.POST['due_date'])
+            todo_item = TodoItem.objects.get(pk=form.cleaned_data['item_id'])
+            todo_item.title = form.cleaned_data['item_title']
+            todo_item.due_date = form.cleaned_data['item_due_date']
+            todo_item.save()
+        return redirect("todo:todo")
+
+@method_decorator(login_required(login_url='myauth:check_login'),name='dispatch')
 class DeleteTodoItemView(View):
     def post(self, request):
         json_data=json.loads(request.body)
@@ -75,5 +100,3 @@ class DeleteTodoItemView(View):
         else:
             return HttpResponse("Empty data")
 
-    def get(self, request):
-        return HttpResponse("GET Delete Todo Item View")

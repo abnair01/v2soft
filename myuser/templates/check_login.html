@@ -4,12 +4,12 @@
 {% block content %}
   <div class="container form-signin mt-0 pt-0">
     <div class="mb-3 mt-3 text-center">
-      <a href={% url 'home' %}>
+      <a href={% url 'myauth:home' %}>
         <img class = "rounded" src="{% static 'myuser/images/myauth_logo.svg' %}" alt="" width="100px" height="30px">
       </a>
     </div>
     <div class="container form-signin border rounded-3">
-      <form action={% url 'check_login' %} method="post" class="needs-validation" novalidate>
+      <form action={% url 'myauth:check_login' %} method="post" class="needs-validation" novalidate>
         {% csrf_token %}
         <div class="mb-3">
           <h1 class="h3 mb-3 mt-3 font-weight-normal">Log in</h1>
@@ -30,7 +30,7 @@
       <div class="separator mb-4 mt-4"></div>
       <div class="mb-4">
         <span>Already have an account?</span>
-        <a href="{% url 'check_login' %}">Log in</a>
+        <a href="{% url 'myauth:check_login' %}">Log in</a>
       </div>
       -->
     </div>

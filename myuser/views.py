@@ -13,6 +13,9 @@ from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+
 # Create your views here.
 class CheckLoginView(View):
     form_class =  CheckLoginForm
@@ -96,3 +99,10 @@ class LoginView(View):
                 return render(request, self.template_name,{'form':form})
 
         return render(request,self.template_name,{'form':form})
+
+
+@method_decorator(login_required(login_url='myauth:check_login'),name='dispatch')
+class LogoutView(View):
+    def get(self,request):
+        logout(request)
+        return redirect(reverse('myauth:check_login'))

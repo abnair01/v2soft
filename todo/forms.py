@@ -33,6 +33,20 @@ class TodoItemForm(Form):
         #import pdb;pdb.set_trace()
         return parse_date(self.cleaned_data['item_due_date'])
 
+class UpdateTodoItemForm(Form):
+    item_id = forms.CharField(max_length=100)
+    item_title = forms.CharField(max_length=100)
+    item_due_date = forms.CharField()
+
+    def clean_todo_list_id(self):
+        #import pdb;pdb.set_trace()
+        return self.cleaned_data['item_id']
+    def clean_item_title(self):
+        #import pdb;pdb.set_trace()
+        return self.cleaned_data['item_title']
+    def clean_item_due_date(self):
+        #import pdb;pdb.set_trace()
+        return parse_date(self.cleaned_data['item_due_date'])
 """
 class TodoForm(Form):
     #Django uses BigAutoField for creating automatic pk.it is guaranteed to fit numbers from 1 to 9223372036854775807
