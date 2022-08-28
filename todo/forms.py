@@ -33,6 +33,23 @@ class TodoItemForm(Form):
         #import pdb;pdb.set_trace()
         return parse_date(self.cleaned_data['item_due_date'])
 
+class UpdateTodoForm(Form):
+    todo_id = forms.CharField(max_length=100)
+    title = forms.CharField(max_length=100)
+    #due_date = forms.CharField()
+
+    def clean_todo_id(self):
+        #import pdb;pdb.set_trace()
+        return self.cleaned_data['todo_id']
+    def clean_title(self):
+        #import pdb;pdb.set_trace()
+        return self.cleaned_data['title']
+    """
+    def clean_due_date(self):
+        import pdb;pdb.set_trace()
+        return parse_date(self.cleaned_data['due_date'])
+    """
+
 class UpdateTodoItemForm(Form):
     item_id = forms.CharField(max_length=100)
     item_title = forms.CharField(max_length=100)

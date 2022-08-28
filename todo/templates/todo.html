@@ -14,7 +14,7 @@
   </div>
 </div>
 
-<div class="container">
+<div class="container" id="dashboard-container">
   <div class="row bg-dark fixed-bottom">
     <div class="text-center">
       <div class="" role="toolbar" aria-label="Toolbar with button groups">
@@ -22,7 +22,7 @@
           <button type="button" class="btn btn-success" title="Create Todo List" data-bs-toggle="modal" data-bs-target="#exampleModal">
             <i class="bi bi-plus-square"></i>
           </button>
-          <button type="button" class="btn btn-warning" title="Edit Todo List" disabled> 
+          <button type="button" class="btn btn-warning" title="Edit Todo List" data-button-box="todo-edit" disabled data-bs-toggle="modal" data-bs-target="#editTodoModal" data-todoid=""> 
             <i class="bi bi-pencil-square"></i>
           </button>
           <button type="button" class="btn btn-danger" title="Delete Todo List">
@@ -58,12 +58,15 @@
             <div class="card-header text-center">
               <div class="input-group">
                 <div class="input-group-text">
-                  <input class="form-check-input mt-0" type="checkbox" value="">
+                  {% concat "todo-cb-id-" todo.id as todo_cb_id %}
+                  <input class="form-check-input mt-0" type="checkbox" value="" id="{{ todo_cb_id }}" data-checkbox="todo-cb" data-todoid="{{todo.id}}">
                 </div>
-                <input type="text" class="form-control text-center" value="{{todo.title}}" disabled>
+                <input type="text" class="form-control text-center" value="{{todo.title}}" data-todo-title="{{todo.title}}" disabled>
+                <input type="text" class="form-control" value="{{todo.due_date}}" data-todo-duedate="{{item.due_date}}" disabled hidden>
                 <div class="input-group-text">
                   <div class="form-switch">
-                    <input class="form-check-input" type="checkbox" role="switch">
+                    {% add_boolean_attr todo.done "checked" as todo_cb_attr %}
+                    <input class="form-check-input" type="checkbox" role="switch" {{todo_cb_attr}}>
                   </div>
                 </div>
               </div>
@@ -76,7 +79,7 @@
                     <input class="form-check-input mt-0" type="checkbox" value="" id="{{ item_id }}" data-checkbox="item-cb" data-todoid="{{todo.id}}" data-todo-itemid="{{item.id}}">
                   </div>
                   <input class="form-control mb-2" data-todo-item-title="{{item.title}}" value="{{ item.title }}" data-todo-itemid="{{item.id}}" readonly>
-                  <input class="form-control mb-2" data-todo-item-duedate="{{item.due_date}}" value="{{ item.due_date }}" data-todo-itemid="{{item.id}}" readonly>
+                  <input class="form-control mb-2" data-todo-item-duedate="{{item.due_date}}" value="{{ item.due_date }}" data-todo-itemid="{{item.id}}" readonly hidden>
                   <div class="input-group-text mb-2">
                     <div class="form-switch">
                       {% add_boolean_attr item.done "checked" as cb_attr %}
@@ -145,6 +148,47 @@
     </div>
   </div>
 
+  <!-- Modal to edit todo list -->
+  <div class="modal fade" id="editTodoModal" tabindex="-1" aria-labelledby="editTodoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel">Update Todo List</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action={% url 'todo:update_todo' %} method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <!--
+            <div class="mb-3">
+              <h1 class="h3 mb-3 mt-3 font-weight-normal">Log in</h1>
+            </div>
+            -->
+            <div class="mb-3">
+              <label for="edit_todo_id" class="form-label">Todo Id</label>
+              <input name="todo_id" type="text" class="form-control" id="edit_todo_id" required readonly>
+            </div>
+            <div class="mb-3">
+              <label for="edit_todo_title" class="form-label">Title</label>
+              <input name="title" type="text" class="form-control" id="edit_todo_title" required>
+            </div>
+            <div class="mb-3">
+              <label for="edit_todo_due_date" class="form-label">Due Date</label>
+              <input name="due_date" type="text" class="form-control" id="edit_todo_due_date" required readonly placeholder='Select Due Date'>
+            </div>
+            <div class="mb-3">
+              <button type="submit" class="w-100 btn btn-lg btn-warning">Update</button>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <!--<button type="button" class="btn btn-primary">Save changes</button>-->
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <!-- Modal to add todo list item -->
   <div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -164,7 +208,7 @@
 
             <div class="mb-3">
               <label for="todo_list_id" class="form-label">Todo Id</label>
-              <input name="todo_list_id" type="text" class="form-control" id="todo_list_id" required>
+              <input name="todo_list_id" type="text" class="form-control" id="todo_list_id" required readonly>
             </div>
             <div class="mb-3">
               <label for="item_title" class="form-label">Title</label>
@@ -172,7 +216,7 @@
             </div>
             <div class="mb-3">
               <label for="item_due_date" class="form-label">Due Date</label>
-              <input name="item_due_date" type="text" class="form-control" id="item_due_date" required placeholder='Select Due Date'>
+              <input name="item_due_date" type="text" class="form-control" id="item_due_date" required readonly placeholder='Select Due Date'>
             </div>
             <div class="mb-3">
               <button type="submit" class="w-100 btn btn-lg btn-warning">Create</button>
@@ -192,7 +236,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="itemModalLabel">Add todo item.</h5>
+          <h5 class="modal-title" id="itemModalLabel">Edit Todo Item.</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -206,7 +250,7 @@
 
             <div class="mb-3">
               <label for="edit_item_id" class="form-label">Todo Item Id</label>
-              <input name="item_id" type="text" class="form-control" id="edit_item_id" required>
+              <input name="item_id" type="text" class="form-control" id="edit_item_id" required readonly>
             </div>
             <div class="mb-3">
               <label for="edit_item_title" class="form-label">Title</label>
@@ -214,7 +258,7 @@
             </div>
             <div class="mb-3">
               <label for="edit_item_due_date" class="form-label">Due Date</label>
-              <input name="item_due_date" type="text" class="form-control" id="edit_item_due_date" required placeholder='Select Due Date'>
+              <input name="item_due_date" type="text" class="form-control" id="edit_item_due_date" required readonly placeholder='Select Due Date'>
             </div>
             <div class="mb-3">
               <button type="submit" class="w-100 btn btn-lg btn-warning">Update</button>
@@ -278,6 +322,43 @@
         //e.preventDefault();
       //});
 
+      /*
+        Important: Why no listener was added for exampleModal? For other Modal there is listener.
+        Reason listner is added because we needed to update the fields in the Modal when it is visible to user.
+        For example Modal there is no modal field to be updated.
+      */
+      const editTodoModal = document.getElementById('editTodoModal');
+      editTodoModal.addEventListener('show.bs.modal', event => {
+        // Button that triggered the modal
+        const button = event.relatedTarget;
+        //console.log(event.target);
+        //console.log(event.relatedTarget);
+        // Extract info from data-bs-* attributes
+        const todoListId = button.getAttribute('data-todoid');
+        // If necessary, you could initiate an AJAX request here
+        // and then do the updating in a callback.
+        //
+        // Update the modal's content.
+        //const modalTitle = itemModal.querySelector('.modal-title')
+        //const todoListIdInput = itemModal.querySelector('#todo_list_id');
+
+        //modalTitle.textContent = `New message to ${recipient}`
+        //todoListIdInput.value = todoListId;
+        //Get Modal Input elements
+        let todoIdInput = editTodoModal.querySelector('#edit_todo_id');
+        let todoTitleInput = editTodoModal.querySelector('#edit_todo_title');
+        let todoDuedateInput = editTodoModal.querySelector('#edit_todo_due_date');
+
+        let cardid="card-"+todoListId;
+        let card=document.getElementById(cardid);
+        let checkBox = card.querySelector('[data-checkbox="todo-cb"]');
+        let titleLabel = card.querySelector('[data-todo-title]');
+        let dueDateLabel = card.querySelector('[data-todo-duedate]');
+        todoIdInput.value = checkBox.dataset.todoid;
+        todoTitleInput.value = titleLabel.dataset.todoTitle;
+        todoDuedateInput.value = dueDateLabel.dataset.todoDuedate;
+      })
+
       const itemModal = document.getElementById('itemModal');
       itemModal.addEventListener('show.bs.modal', event => {
         // Button that triggered the modal
@@ -314,7 +395,6 @@
         let itemIdInput = itemEditModal.querySelector('#edit_item_id');
         let itemTitleInput = itemEditModal.querySelector('#edit_item_title');
         let itemDuedateInput = itemEditModal.querySelector('#edit_item_due_date');
-        console.log(itemEditModal);
         //modalTitle.textContent = `New message to ${recipient}`
         //todoListIdInput.value = todoListId;
 
@@ -323,12 +403,8 @@
           let card=document.getElementById(cardid);
           let checkBox = card.querySelector('input:checked');
           let selectedItemId = checkBox.dataset.todoItemid;
-          console.log(card);
           let titleLabel = card.querySelector(`[data-todo-item-title][data-todo-itemid="${selectedItemId}"]`);
           let dueDateLabel = card.querySelector(`[data-todo-item-duedate][data-todo-itemid="${selectedItemId}"]`);
-          console.log(checkBox);
-          console.log(titleLabel);
-          console.log(dueDateLabel);
           itemIdInput.value = checkBox.dataset.todoItemid;
           itemTitleInput.value = titleLabel.dataset.todoItemTitle;
           itemDuedateInput.value = dueDateLabel.dataset.todoItemDuedate;
@@ -336,12 +412,39 @@
       })
 
 
+      //Register click event for all todolist checkboxes
+      const todoCheckboxes = document.querySelectorAll('[data-checkbox="todo-cb"]');
+      todoCheckboxes.forEach(todo => {
+        todo.addEventListener('click',processTodoCheckBoxClick);
+      });
       //Register click event for all item checkboxes
       const itemCheckboxes = document.querySelectorAll('[data-checkbox="item-cb"]');
       itemCheckboxes.forEach(item => {
         item.addEventListener('click',processItemCheckBoxClick);
       });
 
+      //Only when one check box is checked edit button will be enabled. 
+      //If zero or more than one checkbox is checked edit button will be disabled.
+      //By default all edit buttons are disabled at start.
+      function processTodoCheckBoxClick(event){
+        const todoCheckboxes = document.querySelectorAll('input[data-checkbox="todo-cb"]:checked');
+        let selectedTodoCb = todoCheckboxes.item(0);
+        //console.log(selectedTodoCb);
+        const todoEditButton = document.querySelector('[data-button-box="todo-edit"]');
+        if(todoCheckboxes.length === 1){
+
+          todoEditButton.disabled=false;
+          todoEditButton.dataset.todoid = selectedTodoCb.dataset.todoid;
+
+        }else{
+          todoEditButton.disabled = true;
+          todoEditButton.dataset.todoid = "";
+        }
+      }
+
+      //Only when one check box is checked edit button will be enabled. 
+      //If zero or more than one checkbox is checked edit button will be disabled.
+      //By default all edit buttons are disabled at start.
       function processItemCheckBoxClick(event){
         let elem=event.currentTarget;
         let cardid="card-"+elem.dataset.todoid;

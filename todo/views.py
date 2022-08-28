@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.views import View
 from todo.forms import TodoForm
 from todo.forms import TodoItemForm
+from todo.forms import UpdateTodoForm
 from todo.forms import UpdateTodoItemForm
 #from todo.forms import DeleteTodoItemForm
 from todo.models import TodoList
@@ -63,6 +64,25 @@ class TodoItemView(View):
             new_todo.save()
         return redirect("todo:todo")
 
+
+
+@method_decorator(login_required(login_url='myauth:check_login'),name='dispatch')
+class UpdateTodoView(View):
+    form_class =  UpdateTodoForm
+    template_name = 'todo.html'
+    def post(self, request):
+        context = {}
+        form = self.form_class(request.POST)
+        #import pdb; pdb.set_trace()
+        if form.is_valid():
+            #user = get_user_model().objects.get(pk=request.user.id)
+            #c_title = request.POST['title']
+            #c_due_date = parse_date(request.POST['due_date'])
+            todo = TodoList.objects.get(pk=form.cleaned_data['todo_id'])
+            todo.title = form.cleaned_data['title']
+            #todo.due_date = form.cleaned_data['due_date']
+            todo.save()
+        return redirect("todo:todo")
 
 @method_decorator(login_required(login_url='myauth:check_login'),name='dispatch')
 class UpdateTodoItemView(View):
