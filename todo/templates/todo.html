@@ -25,7 +25,7 @@
           <button type="button" class="btn btn-warning" title="Edit Todo List" data-button-box="todo-edit" disabled data-bs-toggle="modal" data-bs-target="#editTodoModal" data-todoid=""> 
             <i class="bi bi-pencil-square"></i>
           </button>
-          <button type="button" class="btn btn-danger" title="Delete Todo List">
+          <button type="button" class="btn btn-danger" title="Delete Todo List" data-button-box="todo-delete" disabled>
             <i class="bi bi-dash-square"></i>
           </button>
         </div>
@@ -97,7 +97,7 @@
                 <button type="button" class="btn btn-warning" title="Edit Todo Item" data-button-box="item-edit" disabled data-bs-toggle="modal" data-bs-target="#itemEditModal" data-bs-todoid="{{todo.id}}">
                   <i class="bi bi-pencil-square"></i>
                 </button>
-                <button type="button" class="btn btn-danger" title="Delete Todo Item" data-button-box="item-delete" data-todoid="{{todo.id}}">
+                <button type="button" class="btn btn-danger" title="Delete Todo Item" data-button-box="item-delete" disabled data-todoid="{{todo.id}}">
                   <i class="bi bi-dash-square"></i>
                 </button>
               </div>
@@ -423,47 +423,104 @@
         item.addEventListener('click',processItemCheckBoxClick);
       });
 
-      //Only when one check box is checked edit button will be enabled. 
+      //Only when one check box is checked todolist edit button will be enabled.
+      //If more than zero checkbox checked todolist delete button is enabled
       //If zero or more than one checkbox is checked edit button will be disabled.
-      //By default all edit buttons are disabled at start.
+      //By default todolist edit and delete buttons are disabled at start.
       function processTodoCheckBoxClick(event){
         const todoCheckboxes = document.querySelectorAll('input[data-checkbox="todo-cb"]:checked');
         let selectedTodoCb = todoCheckboxes.item(0);
         //console.log(selectedTodoCb);
         const todoEditButton = document.querySelector('[data-button-box="todo-edit"]');
+        let todoDeleteButton = document.querySelector('[data-button-box="todo-delete"]');
+        //enable disable todolist edit button
         if(todoCheckboxes.length === 1){
-
           todoEditButton.disabled=false;
           todoEditButton.dataset.todoid = selectedTodoCb.dataset.todoid;
-
         }else{
           todoEditButton.disabled = true;
           todoEditButton.dataset.todoid = "";
         }
+        //enable disable todolist delete button
+        if(todoCheckboxes.length > 0){
+          todoDeleteButton.disabled=false;
+        }else{
+          todoDeleteButton.disabled = true;
+        }
       }
 
-      //Only when one check box is checked edit button will be enabled. 
+      //Only when one check box is checked edit button will be enabled.
+      //If one or more check box is checked delete button will be enabled.
       //If zero or more than one checkbox is checked edit button will be disabled.
-      //By default all edit buttons are disabled at start.
+      //By default all edit and delete buttons are disabled at start.
       function processItemCheckBoxClick(event){
         let elem=event.currentTarget;
         let cardid="card-"+elem.dataset.todoid;
         let card=document.getElementById(cardid);
-        const checkedItems = card.querySelectorAll('input:checked')
-        const itemEditButton = card.querySelector('[data-button-box="item-edit"]');
+        let checkedItems = card.querySelectorAll('input:checked')
+        let itemEditButton = card.querySelector('[data-button-box="item-edit"]');
+        let itemDeleteButton = card.querySelector('[data-button-box="item-delete"]');
         if(checkedItems.length === 1){
           itemEditButton.disabled=false;
         }else{
           itemEditButton.disabled = true;
         }
+
+        if(checkedItems.length > 0){
+          itemDeleteButton.disabled=false;
+        }else{
+          itemDeleteButton.disabled = true;
+        }
       }
 
-      //Register click event for all item edit buttons
+      //Register click event for  todo delete button
+      let todoDeleteButtons = document.querySelectorAll('[data-button-box="todo-delete"]');
+      todoDeleteButtons.forEach(todo => {
+        todo.addEventListener('click',processTodoDelete);
+      });
+
+      function processTodoDelete(event){
+        //event.preventDefault();
+        let elem=event.currentTarget;
+        //let cardid="card-"+elem.dataset.todoid;
+        //let card=document.getElementById(cardid);
+        //const checkedItems = card.querySelectorAll('input:checked')
+        let todoCheckedboxes = document.querySelectorAll('input[data-checkbox="todo-cb"]:checked');
+        var todos=[];
+        var todoId="todoid";
+        if(todoCheckedboxes.length > 0){
+          for(let i = 0; i< todoCheckedboxes.length; i++){
+            todos.push({[todoId] : todoCheckedboxes[i].dataset.todoid});
+          }
+          var postData={};
+          postData.todos = todos;
+          let jsonedPostData = JSON.stringify(postData);
+          let httpRequest = new XMLHttpRequest();
+          httpRequest.onreadystatechange = processResponse;
+          httpRequest.onload = loadPage;
+          httpRequest.open('POST','{% url 'todo:delete_todo' %}');
+          httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+          httpRequest.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+          httpRequest.send(jsonedPostData);
+
+          function processResponse(){
+            if(httpRequest.readyState === XMLHttpRequest.DONE){
+              if(httpRequest.status === 200){
+                //console.log(httpRequest.responseText);
+              }else{
+                //console.log("Some Error");
+                //console.log(httpRequest.responseText);
+              }
+            }
+          }
+          function loadPage(){
+            document.location.reload();
+          }
+        }
+      }
 
       //Register click event for all item delete button click.
       const itemDeleteButtons = document.querySelectorAll('[data-button-box="item-delete"]');
-
-
       itemDeleteButtons.forEach(item => {
         item.addEventListener('click',processItemDelete);
       });

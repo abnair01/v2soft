@@ -103,6 +103,24 @@ class UpdateTodoItemView(View):
         return redirect("todo:todo")
 
 @method_decorator(login_required(login_url='myauth:check_login'),name='dispatch')
+class DeleteTodoView(View):
+    def post(self, request):
+        json_data=json.loads(request.body)
+        #import pdb; pdb.set_trace()
+        #response_data={'status':'failed'}
+        #form = DeleteTodoItemForm(json_data)
+        todo_ids = []
+        for obj in json_data['todos']:
+            todo_ids.append(obj['todoid'])
+        #This will do bulk delete
+        if(len(todo_ids) > 0):
+            todo_qs = TodoList.objects.filter(id__in=todo_ids)
+            todo_qs.delete()
+            return HttpResponse("Todo List deleted")
+        else:
+            return HttpResponse("Empty data")
+
+@method_decorator(login_required(login_url='myauth:check_login'),name='dispatch')
 class DeleteTodoItemView(View):
     def post(self, request):
         json_data=json.loads(request.body)
