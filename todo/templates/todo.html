@@ -62,11 +62,11 @@
                   <input class="form-check-input mt-0" type="checkbox" value="" id="{{ todo_cb_id }}" data-checkbox="todo-cb" data-todoid="{{todo.id}}">
                 </div>
                 <input type="text" class="form-control text-center" value="{{todo.title}}" data-todo-title="{{todo.title}}" disabled>
-                <input type="text" class="form-control" value="{{todo.due_date}}" data-todo-duedate="{{item.due_date}}" disabled hidden>
+                <input type="text" class="form-control" value="{{todo.due_date}}" data-todo-duedate="{{todo.due_date}}" disabled hidden>
                 <div class="input-group-text">
                   <div class="form-switch">
                     {% add_boolean_attr todo.done "checked" as todo_cb_attr %}
-                    <input class="form-check-input" type="checkbox" role="switch" {{todo_cb_attr}}>
+                    <input class="form-check-input" type="checkbox" role="switch" data-switchbox="todo-sb" data-todoid="{{todo.id}}" data-todo-title="{{todo.title}}" data-todo-duedate="{{todo.due_date}}" {{todo_cb_attr}}>
                   </div>
                 </div>
               </div>
@@ -83,7 +83,7 @@
                   <div class="input-group-text mb-2">
                     <div class="form-switch">
                       {% add_boolean_attr item.done "checked" as cb_attr %}
-                      <input class="form-check-input" type="checkbox" role="switch" {{cb_attr}} data-todo-itemid="{{item.id}}">
+                      <input class="form-check-input" type="checkbox" role="switch" {{cb_attr}} data-switchbox="todo-item-sb" data-todoid="{{todo.id}}" data-todo-itemid="{{item.id}}" data-todo-item-title="{{item.title}}" data-todo-item-duedate="item.due_date">
                     </div>
                   </div>
                 </div>
@@ -176,6 +176,9 @@
               <label for="edit_todo_due_date" class="form-label">Due Date</label>
               <input name="due_date" type="text" class="form-control" id="edit_todo_due_date" required readonly placeholder='Select Due Date'>
             </div>
+            <div>
+              <input name="done" class="form-check-input" type="checkbox" id="edit_todo_done" hidden>
+            </div>
             <div class="mb-3">
               <button type="submit" class="w-100 btn btn-lg btn-warning">Update</button>
             </div>
@@ -259,6 +262,9 @@
             <div class="mb-3">
               <label for="edit_item_due_date" class="form-label">Due Date</label>
               <input name="item_due_date" type="text" class="form-control" id="edit_item_due_date" required readonly placeholder='Select Due Date'>
+            </div>
+            <div>
+              <input name="item_done" class="form-check-input" type="checkbox" id="edit_item_done" hidden>
             </div>
             <div class="mb-3">
               <button type="submit" class="w-100 btn btn-lg btn-warning">Update</button>
@@ -348,15 +354,17 @@
         let todoIdInput = editTodoModal.querySelector('#edit_todo_id');
         let todoTitleInput = editTodoModal.querySelector('#edit_todo_title');
         let todoDuedateInput = editTodoModal.querySelector('#edit_todo_due_date');
-
+        let todoDoneInput = editTodoModal.querySelector('#edit_todo_done');
         let cardid="card-"+todoListId;
         let card=document.getElementById(cardid);
         let checkBox = card.querySelector('[data-checkbox="todo-cb"]');
         let titleLabel = card.querySelector('[data-todo-title]');
         let dueDateLabel = card.querySelector('[data-todo-duedate]');
+        let doneLabel = card.querySelector('[data-switchbox="todo-sb"]')
         todoIdInput.value = checkBox.dataset.todoid;
         todoTitleInput.value = titleLabel.dataset.todoTitle;
         todoDuedateInput.value = dueDateLabel.dataset.todoDuedate;
+        todoDoneInput.checked = doneLabel.checked;
       })
 
       const itemModal = document.getElementById('itemModal');
@@ -411,6 +419,88 @@
         }
       })
 
+
+      //Register switch click for Todolist switches
+      let todoSwitchBoxes = document.querySelectorAll('[data-switchbox="todo-sb"]');
+      todoSwitchBoxes.forEach(todosb => {
+        todosb.addEventListener('click',processTodoSwitchBoxClick);
+      });
+
+      function processTodoSwitchBoxClick(event){
+        //event.preventDefault();
+        let elem=event.currentTarget;
+        let postData={};
+        let formData = new FormData();
+        formData.append("todo_id",elem.dataset.todoid);
+        formData.append("title",elem.dataset.todoTitle);
+        formData.append("due_date",elem.dataset.todoDuedate);
+        //When submitting checkbox value from form, 
+        // If checkbox is checked, value="on" is submitted in request
+        // if checkbox is unchecked, checkbox value is not at all included in request
+        // At server end this it cause validation error when checkbox is unchecked since it is not part of the request
+        // So at server precense of checkbox name is checked. If it is there then value is considered true. If not value is false.
+        // With form data withoud the below condition check, it will always transmit checkbox value as either true of false.
+        // But at server side value is always set as true because at server we are just checking the presense.
+        if(elem.checked){
+          formData.append("done",elem.checked);
+        }
+        //console.log(elem.checked);
+        sendAjaxDjangoPostRequest(formData,'{% url 'todo:update_todo'%}');
+      }
+
+      //Register switch click for Todoitem switches
+      let todoItemSwitchBoxes = document.querySelectorAll('[data-switchbox="todo-item-sb"]');
+      todoItemSwitchBoxes.forEach(todo_item_sb => {
+        todo_item_sb.addEventListener('click',processTodoItemSwitchBoxClick);
+      });
+
+      function processTodoItemSwitchBoxClick(event){
+        //event.preventDefault();
+        let elem=event.currentTarget;
+        let postData={};
+        let formData = new FormData();
+        formData.append("item_id",elem.dataset.todoItemid);
+        formData.append("item_title",elem.dataset.todoItemTitle);
+        formData.append("item_due_date",elem.dataset.todoItemDuedate);
+        //When submitting checkbox value from form, 
+        // If checkbox is checked, value="on" is submitted in request
+        // if checkbox is unchecked, checkbox value is not at all included in request
+        // At server end this it cause validation error when checkbox is unchecked since it is not part of the request
+        // So at server precense of checkbox name is checked. If it is there then value is considered true. If not value is false.
+        // With form data withoud the below condition check, it will always transmit checkbox value as either true of false.
+        // But at server side value is always set as true because at server we are just checking the presense.
+        if(elem.checked){
+          formData.append("item_done",elem.checked);
+        }
+        //console.log(elem.checked);
+        sendAjaxDjangoPostRequest(formData,'{% url 'todo:update_todo_item'%}');
+      }
+
+      function sendAjaxDjangoPostRequest(data,url){
+        console.log(url);
+        console.log(data);
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = processResponse;
+        httpRequest.onload = loadPage;
+        httpRequest.open('POST',url);
+        httpRequest.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        httpRequest.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+        httpRequest.send(data);
+
+        function processResponse(){
+          if(httpRequest.readyState === XMLHttpRequest.DONE){
+            if(httpRequest.status === 200){
+              //console.log(httpRequest.responseText);
+            }else{
+              //console.log("Some Error");
+              //console.log(httpRequest.responseText);
+            }
+          }
+        }
+        function loadPage(){
+          document.location.reload();
+        }
+      }
 
       //Register click event for all todolist checkboxes
       const todoCheckboxes = document.querySelectorAll('[data-checkbox="todo-cb"]');

@@ -36,19 +36,20 @@ class TodoItemForm(Form):
 class UpdateTodoForm(Form):
     todo_id = forms.CharField(max_length=100)
     title = forms.CharField(max_length=100)
-    #due_date = forms.CharField()
-
+    due_date = forms.CharField()
+    #At client side checkbox is used. If checkbox is false,
+    #no data for done is transmitted, And form becomes invalid
+    #At view itself presence of the field will be checked accordingly value updated.
+    #done = forms.BooleanField() 
     def clean_todo_id(self):
         #import pdb;pdb.set_trace()
         return self.cleaned_data['todo_id']
     def clean_title(self):
         #import pdb;pdb.set_trace()
         return self.cleaned_data['title']
-    """
     def clean_due_date(self):
-        import pdb;pdb.set_trace()
+        #import pdb;pdb.set_trace()
         return parse_date(self.cleaned_data['due_date'])
-    """
 
 class UpdateTodoItemForm(Form):
     item_id = forms.CharField(max_length=100)

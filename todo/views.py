@@ -80,7 +80,15 @@ class UpdateTodoView(View):
             #c_due_date = parse_date(request.POST['due_date'])
             todo = TodoList.objects.get(pk=form.cleaned_data['todo_id'])
             todo.title = form.cleaned_data['title']
-            #todo.due_date = form.cleaned_data['due_date']
+            todo.due_date = form.cleaned_data['due_date']
+            #done is represented by checkbox.
+            #Checkbox value is not transmitted in request 
+            #when it is in unchecked state. This causes form becoming invalid
+            #Hence it checked here instead of form.
+            if("done" in request.POST):
+                todo.done = True
+            else:
+                todo.done = False
             todo.save()
         return redirect("todo:todo")
 
@@ -99,6 +107,14 @@ class UpdateTodoItemView(View):
             todo_item = TodoItem.objects.get(pk=form.cleaned_data['item_id'])
             todo_item.title = form.cleaned_data['item_title']
             todo_item.due_date = form.cleaned_data['item_due_date']
+            #done is represented by checkbox.
+            #Checkbox value is not transmitted in request 
+            #when it is in unchecked state. This causes form becoming invalid
+            #Hence it checked here instead of form.
+            if("item_done" in request.POST):
+                todo_item.done = True
+            else:
+                todo_item.done = False
             todo_item.save()
         return redirect("todo:todo")
 
